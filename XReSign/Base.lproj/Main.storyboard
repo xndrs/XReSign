@@ -236,6 +236,19 @@ NOTE: Pay attention to the right pair between signing certificate and provisioni
                                     <action selector="actionChangeBundleId:" target="XfG-lQ-9wD" id="v8W-ac-GXs"/>
                                 </connections>
                             </button>
+                            <button horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="752" translatesAutoresizingMaskIntoConstraints="NO" id="6Ja-a8-7se">
+                                <rect key="frame" x="604" y="316" width="132" height="32"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="120" id="65u-rq-MAu"/>
+                                </constraints>
+                                <buttonCell key="cell" type="push" title="get entitlements" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="JcN-sA-Gz1">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="actionGetEntitlements:" target="XfG-lQ-9wD" id="IXL-Ug-0Jp"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="bX5-ZQ-r0Z" firstAttribute="centerY" secondItem="bTt-3S-He8" secondAttribute="centerY" id="06O-NR-lHr"/>
@@ -248,10 +261,12 @@ NOTE: Pay attention to the right pair between signing certificate and provisioni
                             <constraint firstItem="8xf-DI-m2E" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="EnA-7C-nn5"/>
                             <constraint firstItem="x1o-yN-0rT" firstAttribute="leading" secondItem="XkL-x1-6qe" secondAttribute="trailing" constant="10" id="Er2-q6-dRg"/>
                             <constraint firstAttribute="trailing" secondItem="AkN-A2-oPi" secondAttribute="trailing" constant="20" id="Gre-Hk-WAh"/>
+                            <constraint firstAttribute="trailing" secondItem="6Ja-a8-7se" secondAttribute="trailing" constant="20" id="H3p-Kd-Rra"/>
                             <constraint firstItem="XkL-x1-6qe" firstAttribute="centerY" secondItem="x1o-yN-0rT" secondAttribute="centerY" id="IEU-D0-yta"/>
                             <constraint firstAttribute="trailing" secondItem="bTt-3S-He8" secondAttribute="trailing" constant="20" id="JKK-a4-BJT"/>
                             <constraint firstAttribute="trailing" secondItem="L8Z-Cw-Sk6" secondAttribute="trailing" constant="20" id="S2Y-ar-OL9"/>
                             <constraint firstItem="8xf-DI-m2E" firstAttribute="top" secondItem="XkL-x1-6qe" secondAttribute="bottom" constant="10" id="Uwm-o0-GtJ"/>
+                            <constraint firstItem="6Ja-a8-7se" firstAttribute="centerY" secondItem="x1o-yN-0rT" secondAttribute="centerY" id="WEz-BQ-qla"/>
                             <constraint firstItem="P5e-eD-aVW" firstAttribute="top" secondItem="bTt-3S-He8" secondAttribute="bottom" constant="15" id="Xi4-gi-FLu"/>
                             <constraint firstItem="4h3-oA-S8M" firstAttribute="leading" secondItem="8xf-DI-m2E" secondAttribute="trailing" constant="10" id="ZLP-P8-SPR"/>
                             <constraint firstItem="4h3-oA-S8M" firstAttribute="top" secondItem="x1o-yN-0rT" secondAttribute="bottom" constant="10" id="aNi-Mx-o1j"/>
@@ -264,9 +279,9 @@ NOTE: Pay attention to the right pair between signing certificate and provisioni
                             <constraint firstAttribute="trailing" secondItem="4h3-oA-S8M" secondAttribute="trailing" constant="20" id="n4h-uI-p9q"/>
                             <constraint firstItem="bTt-3S-He8" firstAttribute="leading" secondItem="bX5-ZQ-r0Z" secondAttribute="trailing" constant="15" id="nZE-MU-qeF"/>
                             <constraint firstItem="YKh-yX-Do1" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="nba-8Y-XsV"/>
-                            <constraint firstAttribute="trailing" secondItem="x1o-yN-0rT" secondAttribute="trailing" constant="20" id="pjC-j0-khz"/>
                             <constraint firstAttribute="trailing" secondItem="9Kl-dj-l8d" secondAttribute="trailing" constant="20" id="ppG-SE-nj6"/>
                             <constraint firstItem="XkL-x1-6qe" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="20" id="rFN-Lu-aFX"/>
+                            <constraint firstItem="6Ja-a8-7se" firstAttribute="leading" secondItem="x1o-yN-0rT" secondAttribute="trailing" constant="10" id="uVE-3L-ClR"/>
                             <constraint firstItem="EsQ-a2-a32" firstAttribute="top" secondItem="qFl-Kj-XdJ" secondAttribute="bottom" constant="10" id="wbU-eF-dhC"/>
                             <constraint firstAttribute="trailing" secondItem="P5e-eD-aVW" secondAttribute="trailing" constant="20" id="yhE-W6-ZgC"/>
                             <constraint firstItem="L8Z-Cw-Sk6" firstAttribute="leading" secondItem="qFl-Kj-XdJ" secondAttribute="trailing" constant="10" id="ysz-ct-odi"/>

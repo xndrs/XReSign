@@ -246,6 +246,24 @@ class ViewController: NSViewController {
         }
     }
 
+    // MARK: - Entitlements
+
+    func codesignEntitlementsDataFromApp(bundlePath: String) -> Data? {
+//          // get entitlements: codesign -d <AppBinary> --entitlements :-
+        let codesignTask: Process = Process()
+        let pipe: Pipe = Pipe()
+
+        codesignTask.launchPath = "/usr/bin/codesign"
+        codesignTask.standardOutput = pipe
+//        codesignTask.standardError = pipe
+        codesignTask.arguments = ["-d", bundlePath, "--entitlements", ":-"]
+
+        codesignTask.launch()
+        let pipeData = pipe.fileHandleForReading.readDataToEndOfFile()
+        codesignTask.waitUntilExit()
+        return pipeData
+    }
+
     // MARK: - Actions
 
     @IBAction func actionBrowseIpa(_ sender: Any) {
@@ -258,6 +276,123 @@ class ViewController: NSViewController {
         openPanel.begin { (result) -> Void in
             if result == .OK {
                 self.textFieldIpaPath.stringValue = openPanel.url?.path ?? ""
+            }
+        }
+    }
+
+    @IBAction func actionGetEntitlements(_ sender: Any) {
+        let openPanel = NSOpenPanel()
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseDirectories = false
+        openPanel.canCreateDirectories = false
+        openPanel.canChooseFiles = true
+        openPanel.allowedFileTypes = ["ipa", "mobileprovision"]
+        openPanel.begin { (result) -> Void in
+            if result == .OK {
+                if let path = openPanel.url?.path {
+                    handleSelectedFile(path: path)
+                }
+            }
+        }
+
+        func handleSelectedFile(path: String) {
+            let filePath = path as NSString
+            let ipaDir = URL(fileURLWithPath: path).deletingLastPathComponent().path as NSString
+            let entitlementsDir = ipaDir.appendingPathComponent("entitlements") as NSString
+            let entitlementsPath = entitlementsDir.appendingPathComponent("entitlements.plist")
+
+            if !FileManager.default.fileExists(atPath: String(entitlementsDir)) {
+                //            try? FileManager.default.removeItem(atPath: String(currentTempDirFolder))
+                try? FileManager.default.createDirectory(atPath: String(entitlementsDir), withIntermediateDirectories: true, attributes: nil)
+            }
+
+            if filePath.pathExtension.lowercased() == "ipa" {
+                var unzipTask: Process = Process()
+                unzipTask.launchPath = "/usr/bin/unzip"
+
+                unzipTask.arguments = ["-u", "-j", "-o", "-q", "-d", String(entitlementsDir), path, "Payload/*.app/embedded.mobileprovision", "Payload/*.app/Info.plist", "-x", "*/*/*/*"]
+
+                unzipTask.launch()
+                unzipTask.waitUntilExit()
+
+                let plistPath = entitlementsDir.appendingPathComponent("Info.plist")
+                guard let appPlist = try? Data(contentsOf: URL(fileURLWithPath: plistPath)) else {
+                    return
+                }
+                guard let appPropertyList = try? PropertyListSerialization.propertyList(from: appPlist, options: PropertyListSerialization.ReadOptions(), format: nil) else {
+                    return
+                }
+                guard let pListDict = appPropertyList as? Dictionary<String, AnyObject> else {
+                    return
+                }
+                guard let bundleExecutable = pListDict["CFBundleExecutable"] as? String else {
+                    return
+                }
+                let bundlePath = NSString("Payload/*.app/").appendingPathComponent(bundleExecutable)
+
+                unzipTask = Process()
+                unzipTask.launchPath = "/usr/bin/unzip"
+                unzipTask.arguments = ["-u", "-j", "-o", "-q", "-d", String(entitlementsDir), path, bundlePath, "-x", "*/*/*/*"]
+                unzipTask.launch()
+                unzipTask.waitUntilExit()
+
+                if let codesignEntitlementsData = codesignEntitlementsDataFromApp(bundlePath: entitlementsDir.appendingPathComponent(bundleExecutable)) {
+                    // read the entitlements directly from the codesign output
+                    guard let entitlements = try? PropertyListSerialization.propertyList(from: codesignEntitlementsData, options: PropertyListSerialization.ReadOptions(), format: nil) as? NSDictionary else {
+                        return
+                    }
+                    if entitlements.write(toFile: entitlementsPath, atomically: true) {
+                        showAlertWith(title: nil, message: String(format: "get entitlements to %@", entitlementsPath), style: .informational)
+                        NSWorkspace.shared.openFile(entitlementsDir as String)
+                    }
+                } else {
+                    // read the entitlements from the provisioning profile instead
+                    guard let entitlements = pListDict["Entitlements"] as? NSDictionary else {
+                        return
+                    }
+                    if entitlements.write(toFile: entitlementsPath, atomically: true) {
+                        showAlertWith(title: nil, message: String(format: "get entitlements to %@", entitlementsPath), style: .informational)
+                        NSWorkspace.shared.openFile(entitlementsDir as String)
+                    }
+                }
+            } else if filePath.pathExtension.lowercased() == "mobileprovision" {
+                guard let launchPath = Bundle.main.path(forResource: "entitlements", ofType: "sh") else {
+                    showAlertWith(title: nil, message: "Can not find entitlements script to run", style: .critical)
+                    return
+                }
+
+                DispatchQueue.global().async {
+                    let task: Process = Process()
+                    let pipe: Pipe = Pipe()
+
+                    task.launchPath = "/bin/sh"
+                    task.arguments = [launchPath, path, entitlementsDir as String]
+                    task.standardOutput = pipe
+                    task.standardError = pipe
+
+                    let handle = pipe.fileHandleForReading
+                    task.launch()
+
+                    let data = handle.readDataToEndOfFile()
+                    let buffer = String(data: data, encoding: String.Encoding.utf8)!
+                    print("\(buffer)")
+
+                    var success = false
+                    if let _ = buffer.range(of: "SUCCESS") {
+                        success = true
+                    }
+                    DispatchQueue.main.async {
+                        if success {
+                            self.showAlertWith(title: nil, message: String(format: "get entitlements to %@", entitlementsDir), style: .informational)
+                            NSWorkspace.shared.openFile(entitlementsDir as String)
+                        } else {
+                            return
+                        }
+                    }
+                }
+                return
+            } else {
+                showAlertWith(title: nil, message: "Please select mobileprovision or IPA file", style: .critical)
             }
         }
     }
